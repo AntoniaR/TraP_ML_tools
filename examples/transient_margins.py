@@ -23,12 +23,23 @@ from sqlalchemy import *
 from sqlalchemy.orm import relationship
 import sys
 sys.path.append('../')
-from dblogin import * # This file contains all the variables required to connect to the database
-from database_tools import dbtools
+#from dblogin import * # This file contains all the variables required to connect to the database
+#from database_tools import dbtools
 from tools import tools
 from plotting import plot_varib_params as pltvp
 from machine_learning import train_sigma_margin
 from machine_learning import generic_tools
+
+matplotlib.rcParams.update({'font.size': 26})
+matplotlib.rcParams['axes.linewidth'] = 2
+matplotlib.rcParams['xtick.major.size'] = 12
+matplotlib.rcParams['ytick.major.size'] = 12
+matplotlib.rcParams['xtick.major.width'] = 2
+matplotlib.rcParams['ytick.major.width'] = 2
+matplotlib.rcParams['xtick.minor.size'] = 8
+matplotlib.rcParams['ytick.minor.size'] = 8
+matplotlib.rcParams['xtick.minor.width'] = 1
+matplotlib.rcParams['ytick.minor.width'] = 1
 
 # The input data and thresholds
 tests = False
@@ -40,32 +51,30 @@ detection_threshold = 8.
 
 # Load the data and give appropriate labels
 all_data = generic_tools.load_data(stableData,simulatedData)
-
 # Identify all the new sources detected during the pipeline run
-all_data=all_data.loc[(all_data['ttype'] == 0) | (all_data['ttype'] == 1)]
-
+all_data2=all_data.loc[all_data['ttype'] != 2]
 # Create a histogram of the detection thresholds assuming the source
 # was found in the lowest RMS region of image
-x=all_data.loc[(all_data['ttype'] == 0) & (all_data['variable'] == 0)]
-x2=all_data.loc[(all_data['ttype'] == 0) & (all_data['variable'] == 1)]
+x=all_data2.loc[all_data2['variable'] == 0]
+x2=all_data2.loc[all_data2['variable'] == 1]
 plt.figure(figsize=(12,10))
 plt.xscale('log')
 bins=np.logspace(np.log10(min(x['minRmsSigma'])), np.log10(max(x2['minRmsSigma'])), num=50, endpoint=True, base=10.0)
 plt.hist(x['minRmsSigma'], bins=bins, histtype='stepfilled', color='b')
 plt.hist(x2['minRmsSigma'], bins=bins, histtype='step', linewidth=2, color='r')
+plt.xlim(0.1,1e4)
 plt.xlabel(r'Expected detection significance of source ($\sigma$)', fontsize=24)
 plt.axvline(x=detection_threshold, linestyle='--', linewidth=2, color='k')
 plt.savefig(path+'lowRMS_sigma_histogram.png')
 
 # Create a histogram of the detection thresholds assuming the source
 # was found in the lowest RMS region of image
-x=all_data.loc[(all_data['ttype'] == 1) & (all_data['variable'] == 0)]
-x2=all_data.loc[(all_data['ttype'] == 1) & (all_data['variable'] == 1)]
 plt.figure(figsize=(12,10))
 plt.xscale('log')
-bins=np.logspace(np.log10(min(x['minRmsSigma'])), np.log10(max(x2['minRmsSigma'])), num=50, endpoint=True, base=10.0)
-plt.hist(x['minRmsSigma'], bins=bins, histtype='stepfilled', color='b')
-plt.hist(x2['minRmsSigma'], bins=bins, histtype='step', linewidth=2, color='r')
+bins=np.logspace(np.log10(min(x['maxRmsSigma'])), np.log10(max(x2['minRmsSigma'])), num=50, endpoint=True, base=10.0)
+plt.hist(x['maxRmsSigma'], bins=bins, histtype='stepfilled', color='b')
+plt.hist(x2['maxRmsSigma'], bins=bins, histtype='step', linewidth=2, color='r')
+plt.xlim(0,1e4)
 plt.xlabel(r'Expected detection significance of source ($\sigma$)', fontsize=24)
 plt.axvline(x=detection_threshold, linestyle='--', linewidth=2, color='k')
 plt.savefig(path+'highRMS_sigma_histogram.png')
@@ -77,7 +86,7 @@ best_plot_data, worst_plot_data, sigBest, sigWorst = train_sigma_margin.find_sig
 
 # Search and identify the optimal sigma margin for the best and
 # worst parts of the image
-sigWorst, sigBest = train_sigma_margin.plot_diagnostic(best_plot_data,worst_plot_data)
+sigWorst, sigBest = train_sigma_margin.plot_diagnostic(best_plot_data,worst_plot_data,path)
 
 # Identify the ids of interesting transient candidates assuming they're in the
 # worst part of the image

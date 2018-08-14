@@ -19,8 +19,8 @@ lda=0.1
 path='ml_csv_files/'
 stableData = path+'stable_sources.csv'
 simulatedData = path+'sim_*_trans_data.csv'
-anomaly = True
-logistic = False
+anomaly = False
+logistic = True
 transSrc = False
 # setting the options for the scipy optimise function
 options = {'full_output': True, 'maxiter': 5000, 'ftol': 1e-4, 'maxfun': 5000, 'disp': True}
@@ -28,11 +28,12 @@ options = {'full_output': True, 'maxiter': 5000, 'ftol': 1e-4, 'maxfun': 5000, '
 #load the data required
 all_data = generic_tools.load_data(stableData,simulatedData)
 
-# Create the learning curve for all three machine learning algorithms
-MLtests.learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path)
 
 #create the lambda curve for the logistic regreassion algorithm
 MLtests.lambda_curve(all_data,lda,options,path)
 
+# Create the learning curve for all three machine learning algorithms
+MLtests.learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path)
+
 # Create the repitition curve for all three machine learning algorithms
-MLtests.repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path)
+#MLtests.repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path)

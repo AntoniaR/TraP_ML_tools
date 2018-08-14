@@ -57,3 +57,7 @@ def create_datasets(data, n, m):
     # return the training, validation and test datasets 
     return train, valid, test
 
+def write_test_data(filename,data):
+    data = np.asarray(data)
+    np.savetxt(filename, data, delimiter=",")
+    return

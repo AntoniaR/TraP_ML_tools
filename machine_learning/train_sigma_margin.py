@@ -8,7 +8,17 @@ pylab.rcParams['legend.loc'] = 'best'
 from matplotlib.ticker import NullFormatter
 from matplotlib.font_manager import FontProperties
 import generic_tools
-matplotlib.rcParams.update({'font.size': 20})
+
+matplotlib.rcParams.update({'font.size': 26})
+matplotlib.rcParams['axes.linewidth'] = 2
+matplotlib.rcParams['xtick.major.size'] = 12
+matplotlib.rcParams['ytick.major.size'] = 12
+matplotlib.rcParams['xtick.major.width'] = 2
+matplotlib.rcParams['ytick.major.width'] = 2
+matplotlib.rcParams['xtick.minor.size'] = 8
+matplotlib.rcParams['ytick.minor.size'] = 8
+matplotlib.rcParams['xtick.minor.width'] = 1
+matplotlib.rcParams['ytick.minor.width'] = 1
 
 def training_error(data,sigma,detection_threshold):
     fn=len([a[0,0] for a in data if a[0,0]<(detection_threshold+sigma) if a[0,1]==1])
@@ -68,17 +78,17 @@ def plot_diagnostic(best_data,worst_data, path):
     # identify the sigma margin which optimises the precision and recall
     
     plt.figure(figsize=(12,12))
-    plt.plot([a[0] for a in worst_data],[a[1] for a in worst_data], 'r-', linewidth=2.0)
-    plt.plot([a[0] for a in worst_data],[a[2] for a in worst_data], 'b-', linewidth=2.0)
-    plt.plot([a[0] for a in worst_data],[a[3] for a in worst_data], 'k-', linewidth=2.0)
-    plt.plot([a[0] for a in best_data],[a[1] for a in best_data], 'r--', linewidth=2.0)
-    plt.plot([a[0] for a in best_data],[a[2] for a in best_data], 'b--', linewidth=2.0)
-    plt.plot([a[0] for a in best_data],[a[3] for a in best_data], 'k--', linewidth=2.0)
+    plt.plot([a[0] for a in worst_data],[a[1] for a in worst_data], 'r-', linewidth=5.0)
+    plt.plot([a[0] for a in worst_data],[a[2] for a in worst_data], 'b-', linewidth=5.0)
+    plt.plot([a[0] for a in worst_data],[a[3] for a in worst_data], 'k-', linewidth=5.0)
+    plt.plot([a[0] for a in best_data],[a[1] for a in best_data], 'r--', linewidth=5.0)
+    plt.plot([a[0] for a in best_data],[a[2] for a in best_data], 'b--', linewidth=5.0)
+    plt.plot([a[0] for a in best_data],[a[3] for a in best_data], 'k--', linewidth=5.0)
     worst_maxF=max([a[3] for a in worst_data])
     best_maxF=max([a[3] for a in best_data])
     sigWorst=[a for a in worst_data if a[3]==worst_maxF][0]
     sigBest=[a for a in best_data if a[3]==best_maxF][0]
-    plt.xlabel(r'$\sigma$ margin', fontsize=24)
+    plt.xlabel(r'$\sigma$ margin')
     plt.xscale('log')
     print 'Best sigma parameters:'
     print 'Worst RMS = '+str(sigWorst[0])+' Precision = '+str(sigWorst[1])+' Recall = '+str(sigWorst[2])

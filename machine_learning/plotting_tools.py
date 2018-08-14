@@ -11,8 +11,16 @@ from matplotlib.font_manager import FontProperties
 import generic_tools
 from astroML import density_estimation
 
-#
-matplotlib.rcParams.update({'font.size': 20})
+matplotlib.rcParams.update({'font.size': 26})
+matplotlib.rcParams['axes.linewidth'] = 2
+matplotlib.rcParams['xtick.major.size'] = 12
+matplotlib.rcParams['ytick.major.size'] = 12
+matplotlib.rcParams['xtick.major.width'] = 2
+matplotlib.rcParams['ytick.major.width'] = 2
+matplotlib.rcParams['xtick.minor.size'] = 8
+matplotlib.rcParams['ytick.minor.size'] = 8
+matplotlib.rcParams['xtick.minor.width'] = 1
+matplotlib.rcParams['ytick.minor.width'] = 1
 
 def make_colours(frequencies):
     # using a matplotlib colourmap, assign a different colour to each of the unique fields in the input list
@@ -237,18 +245,19 @@ def create_diagnostic(trans_data,sigcut_etanu,sigcut_Vnu,frequencies,dataset_id)
 
 def plotLC(num, error_train, error_val, fname, xlog, ylog, xlabel):
     # Plot the learning curves
-    plt.figure(1,figsize=(8,8))
+    plt.figure(1,figsize=(10,10))
     error_train=[a if a!=0 else 1e-6 for a in error_train]
     error_val=[a if a!=0 else 1e-6 for a in error_val]
-    plt.plot(num, error_train, 'b-', linewidth=2.0)
-    plt.plot(num, error_val, 'g-', linewidth=2.0)
+    plt.plot(num, error_train, 'b-', linewidth=4.0)
+    plt.plot(num, error_val, 'g-', linewidth=4.0)
     if ylog:
         plt.yscale('log')
     if xlog:
         plt.xscale('log')
-    plt.xlabel(xlabel, fontsize=22)
-    plt.ylabel('Error', fontsize=22)
+    plt.xlabel(xlabel)
+    plt.ylabel('Error')
     plt.axis([min(num), max(num)*1.2, 1e-4,1e-0])
+    plt.tight_layout()
     #plt.legend(['training', 'validation'], loc=4, fontsize=28)
     plt.savefig(fname+'_curve.png')
     plt.close()

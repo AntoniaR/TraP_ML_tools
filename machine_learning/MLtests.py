@@ -5,6 +5,7 @@ import numpy as np
 import train_anomaly_detect
 import train_logistic_regression
 import train_sigma_margin
+from tools import tools
 import os
 import random
 from scipy import optimize
@@ -39,7 +40,7 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             tmp = [[rangeNums[x], error_train[x], error_valid[x]] for x in range(len(rangeNums))]
             generic_tools.write_test_data(path+"AD_learn_data.csv",tmp)
         else:
-            tmp = generic_tools.extract_data(path+"AD_learn_data.csv")
+            tmp = tools.extract_data(path+"AD_learn_data.csv")
             rangeNums = [int(x[0]) for x in tmp]
             error_train = [float(x[1]) for x in tmp]
             error_valid = [float(x[2]) for x in tmp]      
@@ -55,7 +56,7 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             tmp = [[x, error_train[x], error_valid[x]] for x in range(len(error_train))]
             generic_tools.write_test_data(path+"LR_learn_data.csv",tmp)
         else:
-            tmp = generic_tools.extract_data(path+"LR_learn_data.csv")
+            tmp = tools.extract_data(path+"LR_learn_data.csv")
             rangeNums = [int(x[0]) for x in tmp]
             error_train = [float(x[1]) for x in tmp]
             error_valid = [float(x[2]) for x in tmp]      
@@ -88,11 +89,11 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             tmp = [[x, worst_error_train[x], worst_error_valid[x]] for x in range(len(worst_error_train))]
             generic_tools.write_test_data(path+"TransWorst_learn_data.csv",tmp)
         else:
-            tmp = generic_tools.extract_data(path+"TransBest_learn_data.csv")
+            tmp = tools.extract_data(path+"TransBest_learn_data.csv")
             rangeNums = [int(x[0]) for x in tmp]
             best_error_train = [float(x[1]) for x in tmp]
             best_error_valid = [float(x[2]) for x in tmp]      
-            tmp = generic_tools.extract_data(path+"TransWorst_learn_data.csv")
+            tmp = tools.extract_data(path+"TransWorst_learn_data.csv")
             rangeNums = [int(x[0]) for x in tmp]
             worst_error_train = [float(x[1]) for x in tmp]
             worst_error_valid = [float(x[2]) for x in tmp]      
@@ -102,7 +103,7 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
     return
 
 
-def lambda_curve(data,lda,options,path):
+def lambda_curve(all_data,lda,options,path):
     data=all_data.loc[(all_data['ttype'] == 2) & (all_data['V']>0.) & (all_data['eta']>0.)]
     datatmp=data.apply(lambda row:[row['#Runcat'],row['eta'],row['V'],row['flux'],row['fluxrat'],row['variable']],axis=1)
     data = datatmp.as_matrix()
@@ -114,7 +115,7 @@ def lambda_curve(data,lda,options,path):
     train, valid, test = generic_tools.create_datasets(shuffled, int(len(shuffled)*0.6), int(len(shuffled)*0.9))
 
     print "creating Lambda curve"
-    if not os.path.exists("LR_lambda_data.csv"):
+    if not os.path.exists(path+"LR_lambda_data.csv"):
         Xtrain, ytrain = train_logistic_regression.create_X_y_arrays(np.matrix([[np.log10(a[1]), np.log10(a[2]), np.log10(a[3]), a[4], a[5]] for a in np.array(train)]))
         Xvalid, yvalid = train_logistic_regression.create_X_y_arrays(np.matrix([[np.log10(a[1]), np.log10(a[2]), np.log10(a[3]), a[4], a[5]] for a in np.array(valid)]))
         
@@ -123,11 +124,11 @@ def lambda_curve(data,lda,options,path):
         tmp = [[lambda_vec[x], error_train[x], error_valid[x]] for x in range(len(lambda_vec))]
         generic_tools.write_test_data(path+"LR_lambda_data.csv",tmp)
     else:
-        tmp = generic_tools.extract_data(path+"LR_lambda_data.csv")
+        tmp = tools.extract_data(path+"LR_lambda_data.csv")
         lambda_vec = [float(x[0]) for x in tmp]
         error_train = [float(x[1]) for x in tmp]
         error_valid = [float(x[2]) for x in tmp]      
-    plotting_tools.plotLC(lambda_vec, error_train, error_valid, "LR_validation", True, True, r"$\lambda$")
+    plotting_tools.plotLC(lambda_vec, error_train, error_valid, path+"LR_validation", True, True, r"$\lambda$")
     return
 
 def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path):
@@ -219,7 +220,7 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
             tmp = [[randomChoice[x], error_train_AD[x], error_valid_AD[x]] for x in range(len(randomChoice))]
             generic_tools.write_test_data(path+"AD_repeat_data.csv",tmp)
         else:
-            tmp = generic_tools.extract_data(path+"AD_repeat_data.csv")
+            tmp = tools.extract_data(path+"AD_repeat_data.csv")
             randomChoice = [int(x[0]) for x in tmp]
             error_train_AD = [float(x[1]) for x in tmp]
             error_valid_AD = [float(x[2]) for x in tmp] 
@@ -229,7 +230,7 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
             tmp = [[x, error_train_LR[x], error_valid_LR[x]] for x in range(len(error_train_LR))]
             generic_tools.write_test_data(path+"LR_repeat_data.csv",tmp)
         else:
-            tmp = generic_tools.extract_data(path+"LR_repeat_data.csv")
+            tmp = tools.extract_data(path+"LR_repeat_data.csv")
             randomChoice = [int(x[0]) for x in tmp]
             error_train_LR = [float(x[1]) for x in tmp]
             error_valid_LR = [float(x[2]) for x in tmp] 
@@ -241,11 +242,11 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
             tmp = [[x, error_train_TWorst[x], error_valid_TWorst[x]] for x in range(len(error_train_TWorst))]
             generic_tools.write_test_data(path+"TransWorst_repeat_data.csv",tmp)
         else:
-            tmp = generic_tools.extract_data(path+"TransBest_repeat_data.csv")
+            tmp = tools.extract_data(path+"TransBest_repeat_data.csv")
             randomChoice = [int(x[0]) for x in tmp]
             error_train_TBest = [float(x[1]) for x in tmp]
             error_valid_TBest = [float(x[2]) for x in tmp] 
-            tmp = generic_tools.extract_data(path+"TransWorst_repeat_data.csv")
+            tmp = tools.extract_data(path+"TransWorst_repeat_data.csv")
             randomChoice = [int(x[0]) for x in tmp]
             error_train_TWorst = [float(x[1]) for x in tmp]
             error_valid_TWorst = [float(x[2]) for x in tmp] 
