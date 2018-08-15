@@ -16,6 +16,7 @@ from machine_learning import MLtests
 precis_thresh = 0.99
 recall_thresh = 0.95
 lda=0.1
+detection_threshold=8
 path='ml_csv_files/'
 stableData = path+'stable_sources.csv'
 simulatedData = path+'sim_*_trans_data.csv'
@@ -33,7 +34,7 @@ all_data = generic_tools.load_data(stableData,simulatedData)
 MLtests.lambda_curve(all_data,lda,options,path)
 
 # Create the learning curve for all three machine learning algorithms
-MLtests.learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path)
+MLtests.learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path,detection_threshold)
 
 # Create the repitition curve for all three machine learning algorithms
-#MLtests.repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path)
+MLtests.repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path,detection_threshold)

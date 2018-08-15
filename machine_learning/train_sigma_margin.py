@@ -32,15 +32,16 @@ def find_sigma_margin(best_data, worst_data, detection_threshold):
     sigma_thresh=np.arange(0.,100.,1)
     best_plot_data=[]
     worst_plot_data=[]
+
     for sigma in sigma_thresh:
-        best_tp=len([a[0] for a in best_data if a[0]>=(detection_threshold+sigma) if a[1]==1])
-        best_fn=len([a[0] for a in best_data if a[0]<(detection_threshold+sigma) if a[1]==1])
-        best_fp=len([a[0] for a in best_data if a[0]>=(detection_threshold+sigma) if a[1]==0])
-        best_tn=len([a[0] for a in best_data if a[0]<(detection_threshold+sigma) if a[1]==0])
-        worst_tp=len([a[0] for a in worst_data if a[0]>=(detection_threshold+sigma) if a[1]==1])
-        worst_fn=len([a[0] for a in worst_data if a[0]<(detection_threshold+sigma) if a[1]==1])
-        worst_fp=len([a[0] for a in worst_data if a[0]>=(detection_threshold+sigma) if a[1]==0])
-        worst_tn=len([a[0] for a in worst_data if a[0]<(detection_threshold+sigma) if a[1]==0])
+        best_tp=len([best_data[a,0] for a in range(len(best_data)) if best_data[a,0]>=(detection_threshold+sigma) if best_data[a,1]==1])
+        best_fn=len([best_data[a,0] for a in range(len(best_data)) if best_data[a,0]<(detection_threshold+sigma) if best_data[a,1]==1])
+        best_fp=len([best_data[a,0] for a in range(len(best_data)) if best_data[a,0]>=(detection_threshold+sigma) if best_data[a,1]==0])
+        best_tn=len([best_data[a,0] for a in range(len(best_data)) if best_data[a,0]<(detection_threshold+sigma) if best_data[a,1]==0])
+        worst_tp=len([worst_data[a,0] for a in range(len(worst_data)) if worst_data[a,0]>=(detection_threshold+sigma) if worst_data[a,1]==1])
+        worst_fn=len([worst_data[a,0] for a in range(len(worst_data)) if worst_data[a,0]<(detection_threshold+sigma) if worst_data[a,1]==1])
+        worst_fp=len([worst_data[a,0] for a in range(len(worst_data)) if worst_data[a,0]>=(detection_threshold+sigma) if worst_data[a,1]==0])
+        worst_tn=len([worst_data[a,0] for a in range(len(worst_data)) if worst_data[a,0]<(detection_threshold+sigma) if worst_data[a,1]==0])
         best_precision,best_recall = generic_tools.precision_and_recall(best_tp,best_fp,best_fn)
         worst_precision,worst_recall = generic_tools.precision_and_recall(worst_tp,worst_fp,worst_fn)
         if best_precision==0 or best_recall==0:

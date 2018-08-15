@@ -11,7 +11,7 @@ import random
 from scipy import optimize
 
 
-def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path):
+def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path,detection_threshold):
     # Conduct tests to ensure that the machine learning algorithm is working effectively
     print "Creating learning curves"
 
@@ -79,8 +79,8 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             worst_shuffled = np.matrix(generic_tools.shuffle_datasets(worst_data))
     
             # sort the data into a training, validation and testing dataset. This is hardcoded to be 60%, 30% and 10% (respectively) of the total dataset
-            best_train, best_valid, best_test = generic_tools.create_datasets(best_shuffled, len(best_shuffled)*0.6, len(best_shuffled)*0.9)
-            worst_train, worst_valid, worst_test = generic_tools.create_datasets(worst_shuffled, len(worst_shuffled)*0.6, len(worst_shuffled)*0.9)
+            best_train, best_valid, best_test = generic_tools.create_datasets(best_shuffled, int(len(best_shuffled)*0.6), int(len(best_shuffled)*0.9))
+            worst_train, worst_valid, worst_test = generic_tools.create_datasets(worst_shuffled, int(len(worst_shuffled)*0.6), int(len(worst_shuffled)*0.9))
 
             best_error_train, worst_error_train, best_error_valid, worst_error_valid = train_sigma_margin.learning_curve(best_train,worst_train,best_valid,worst_valid,detection_threshold)
 
@@ -131,7 +131,7 @@ def lambda_curve(all_data,lda,options,path):
     plotting_tools.plotLC(lambda_vec, error_train, error_valid, path+"LR_validation", True, True, r"$\lambda$")
     return
 
-def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path):
+def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,recall_thresh,path,detection_threshold):
 
     data=all_data.loc[(all_data['ttype'] == 2) & (all_data['V']>0.) & (all_data['eta']>0.)]
     datatmp=data.apply(lambda row:[row['#Runcat'],row['eta'],row['V'],row['flux'],row['fluxrat'],row['variable']],axis=1)
