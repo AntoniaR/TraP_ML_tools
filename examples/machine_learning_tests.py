@@ -20,9 +20,9 @@ detection_threshold=8
 path='ml_csv_files/'
 stableData = path+'stable_sources.csv'
 simulatedData = path+'sim_*_trans_data.csv'
-anomaly = False
+anomaly = True
 logistic = True
-transSrc = False
+transSrc = True
 # setting the options for the scipy optimise function
 options = {'full_output': True, 'maxiter': 5000, 'ftol': 1e-4, 'maxfun': 5000, 'disp': True}
 

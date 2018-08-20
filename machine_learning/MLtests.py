@@ -41,7 +41,7 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             generic_tools.write_test_data(path+"AD_learn_data.csv",tmp)
         else:
             tmp = tools.extract_data(path+"AD_learn_data.csv")
-            rangeNums = [int(x[0]) for x in tmp]
+            rangeNums = [int(float(x[0])) for x in tmp]
             error_train = [float(x[1]) for x in tmp]
             error_valid = [float(x[2]) for x in tmp]      
         plotting_tools.plotLC(rangeNums,error_train, error_valid, path+"AD_learning", True, True, "Number")        
@@ -57,7 +57,7 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             generic_tools.write_test_data(path+"LR_learn_data.csv",tmp)
         else:
             tmp = tools.extract_data(path+"LR_learn_data.csv")
-            rangeNums = [int(x[0]) for x in tmp]
+            rangeNums = [int(float(x[0])) for x in tmp]
             error_train = [float(x[1]) for x in tmp]
             error_valid = [float(x[2]) for x in tmp]      
         plotting_tools.plotLC(range(len(error_train)),error_train, error_valid, path+"LR_learning", True, True, "Number")
@@ -90,11 +90,11 @@ def learning_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,
             generic_tools.write_test_data(path+"TransWorst_learn_data.csv",tmp)
         else:
             tmp = tools.extract_data(path+"TransBest_learn_data.csv")
-            rangeNums = [int(x[0]) for x in tmp]
+            rangeNums = [int(float(x[0])) for x in tmp]
             best_error_train = [float(x[1]) for x in tmp]
             best_error_valid = [float(x[2]) for x in tmp]      
             tmp = tools.extract_data(path+"TransWorst_learn_data.csv")
-            rangeNums = [int(x[0]) for x in tmp]
+            rangeNums = [int(float(x[0])) for x in tmp]
             worst_error_train = [float(x[1]) for x in tmp]
             worst_error_valid = [float(x[2]) for x in tmp]      
 
@@ -187,20 +187,20 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
         if anomaly:
             if not os.path.exists(path+"AD_repeat_data.csv"):
                 if counter in randomChoice:
-                    tmp1,tmp2 = train_anomaly_detect.random_test(stable,variable,train, valid, precis_thresh, recall_thresh)
+                    tmp1,tmp2 = train_anomaly_detect.random_test(stable,variable,train, valid, precis_thresh, recall_thresh,path)
                     error_train_AD.append(tmp1)
                     error_valid_AD.append(tmp2)
                     print counter,error_train_AD[-1],error_valid_AD[-1]
 
         if logistic:
-            if not os.path.exists("LR_repeat_data.csv"):
+            if not os.path.exists(path+"LR_repeat_data.csv"):
                 initial_theta=np.zeros((Xtrain.shape[1]))
                 theta, cost, _, _, _ = optimize.fmin(lambda t: train_logistic_regression.reg_cost_func(t,Xtrain,ytrain.T,lda), initial_theta, **options)
                 error_train_LR.append(train_logistic_regression.check_error(Xtrain,ytrain.T,theta))
                 error_valid_LR.append(train_logistic_regression.check_error(Xvalid,yvalid.T,theta))
 
         if transSrc:
-            if not os.path.exists("TransBest_repeat_data.csv"):
+            if not os.path.exists(path+"TransBest_repeat_data.csv"):
                 # shuffle up the transient and stable data
                 best_shuffled = np.matrix(generic_tools.shuffle_datasets(best))
                 worst_shuffled = np.matrix(generic_tools.shuffle_datasets(worst))
@@ -221,7 +221,7 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
             generic_tools.write_test_data(path+"AD_repeat_data.csv",tmp)
         else:
             tmp = tools.extract_data(path+"AD_repeat_data.csv")
-            randomChoice = [int(x[0]) for x in tmp]
+            randomChoice = [int(float(x[0])) for x in tmp]
             error_train_AD = [float(x[1]) for x in tmp]
             error_valid_AD = [float(x[2]) for x in tmp] 
         plotting_tools.plotLC(randomChoice, error_train_AD, error_valid_AD, path+"AD_repeat", False, True, "Trial number")
@@ -231,7 +231,7 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
             generic_tools.write_test_data(path+"LR_repeat_data.csv",tmp)
         else:
             tmp = tools.extract_data(path+"LR_repeat_data.csv")
-            randomChoice = [int(x[0]) for x in tmp]
+            randomChoice = [int(float(x[0])) for x in tmp]
             error_train_LR = [float(x[1]) for x in tmp]
             error_valid_LR = [float(x[2]) for x in tmp] 
         plotting_tools.plotLC(range(len(error_train_LR)), error_train_LR, error_valid_LR, path+"LR_repeat", False, True, "Trial number")
@@ -243,11 +243,11 @@ def repeat_curve(anomaly,logistic,transSrc,all_data,lda,options,precis_thresh,re
             generic_tools.write_test_data(path+"TransWorst_repeat_data.csv",tmp)
         else:
             tmp = tools.extract_data(path+"TransBest_repeat_data.csv")
-            randomChoice = [int(x[0]) for x in tmp]
+            randomChoice = [int(float(x[0])) for x in tmp]
             error_train_TBest = [float(x[1]) for x in tmp]
             error_valid_TBest = [float(x[2]) for x in tmp] 
             tmp = tools.extract_data(path+"TransWorst_repeat_data.csv")
-            randomChoice = [int(x[0]) for x in tmp]
+            randomChoice = [int(float(x[0])) for x in tmp]
             error_train_TWorst = [float(x[1]) for x in tmp]
             error_valid_TWorst = [float(x[2]) for x in tmp] 
         plotting_tools.plotLC(range(len(error_train_TBest)), error_train_TBest, error_valid_TBest, path+"transBest_repeat", False, True, "Trial number")

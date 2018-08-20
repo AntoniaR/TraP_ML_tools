@@ -11,6 +11,8 @@ pylab.rcParams['legend.loc'] = 'best'
 from matplotlib.ticker import NullFormatter
 from matplotlib.font_manager import FontProperties
 import os
+import plotting_tools
+
 
 
 def trial_data(args):
@@ -241,7 +243,7 @@ def random_test(stable,variable,train, valid, precis_thresh, recall_thresh,path)
     multiple_trials([[np.log10(float(x[1])), np.log10(float(x[2])), float(x[-1])] for x in train if float(x[1]) > 0 if float(x[2]) > 0],"temp_sigma_data.txt")
     data2=np.genfromtxt('temp_sigma_data.txt', delimiter=' ')
     data=[[np.log10(float(train[n][1])),np.log10(float(train[n][2])),train[n][5],float(train[n][-1])] for n in range(len(train)) if float(train[n][1]) > 0 if float(train[n][2]) > 0]
-    best_sigma1, best_sigma2 = find_best_sigmas(precis_thresh,recall_thresh,data2,False,data,False)
+    best_sigma1, best_sigma2 = find_best_sigmas(precis_thresh,recall_thresh,data2,False,data,False,path)
 
     # Find the thresholds for a given sigma (in log space)
     sigcutx,paramx,range_x = generic_tools.get_sigcut([a[0] for a in data if a[3]==0.],best_sigma1)
@@ -260,7 +262,7 @@ def random_test(stable,variable,train, valid, precis_thresh, recall_thresh,path)
     fn=len([[z[0],float(z[1]),float(z[2]),float(z[3]),float(z[4]),'FN'] for z in variable if (float(z[1])<10.**sigcutx or float(z[2])<10.**sigcuty) if z[0] in validIDs]) # False Negative
     validErr = check_error(fp,fn,len(valid))
     
-    plotLC(len(validErr), trainErr, validErr, path+'random', False, True, 'Trial number')
+    #plotting_tools.plotLC(len(validErr), trainErr, validErr, path+'random', False, True, 'Trial number')
     return trainErr, validErr
         
 def check_error(fp,fn,total):
