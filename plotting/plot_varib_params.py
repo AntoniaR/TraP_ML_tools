@@ -6,7 +6,7 @@ import numpy as np
 
 
 def make_cmap(frequencies):
-    cm = matplotlib.cm.get_cmap('jet')
+    cm = matplotlib.cm.get_cmap('hsv')
     col = [cm(1.*i/len(frequencies)) for i in range(len(frequencies))]
     return col
 

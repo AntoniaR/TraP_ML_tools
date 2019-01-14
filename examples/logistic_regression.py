@@ -30,6 +30,7 @@ from tools import tools
 from plotting import plot_varib_params as pltvp
 from machine_learning import train_logistic_regression
 from machine_learning import generic_tools
+import seaborn as sns
 
 # The input data and thresholds
 tests = False
@@ -64,8 +65,10 @@ theta, cost, _, _, _ = optimize.fmin(lambda t: train_logistic_regression.reg_cos
 tp, fp, fn, tn, classified = train_logistic_regression.classify_data(X,y.T,theta)
 classified=np.array(np.c_[ids,classified,y])
 classified=pd.DataFrame(data=classified, columns=['#Runcat','eta','V','flux','fluxrat','classified','label'])
-classified=classified.apply(lambda row:[row['#Runcat'],10.**(float(row['eta'])),10.**(float(row['V'])),float(row['flux']),float(row['fluxrat']),row['classified'],row['label']],axis=1)
-classified.loc[(classified['classified'] == 'FP')].to_csv(path+'LR_candidate_variables.csv',index=False)
+classified['eta']=classified[['eta']].apply(lambda row:10.**(float(row['eta'])),axis=1)
+classified['V']=classified[['V']].apply(lambda row:10.**(float(row['V'])),axis=1)
+classified['flux']=classified[['flux']].apply(lambda row:float(row['flux']),axis=1)
+classified['fluxrat']=classified[['fluxrat']].apply(lambda row:float(row['fluxrat']),axis=1)
 
 # Calculate the precision and recall
 precision, recall = generic_tools.precision_and_recall(tp,fp,fn)
@@ -74,8 +77,12 @@ print "Precision: "+str(precision)+", Recall: "+str(recall)
 
 # Create eta V plot showing training results
 plotdata=classified
-frequencies=plotdata.classified.unique()
-col = pltvp.make_cmap(frequencies)
+
+frequencies=['TN','TP','FN','FP']
+col=['k','b','g','r']
+
+
+
 
 nullfmt   = NullFormatter()         # no labels
 fontP = FontProperties()
@@ -96,24 +103,38 @@ axHistx.xaxis.set_major_formatter(nullfmt)
 axHisty.yaxis.set_major_formatter(nullfmt)
 axHistx.axes.yaxis.set_ticklabels([])
 axHisty.axes.xaxis.set_ticklabels([])
+                    
+
 
 for i in range(len(frequencies)):
     plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
     xdata_var=np.log10(plotdataTMP['eta'])
     ydata_var=np.log10(plotdataTMP['V'])
-    axScatter.scatter(xdata_var, ydata_var,color=col[i], s=10., zorder=5)
+    if frequencies[i] != 'TN':
+        axScatter.scatter(xdata_var, ydata_var,color=col[i], s=20., zorder=5)
+freq_labels=[f for f in frequencies if f!='TN']
+axScatter.legend(freq_labels,loc=4, prop=fontP)
+
+        
+for i in range(len(frequencies)):
+    plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
+    xdata_var=np.log10(plotdataTMP['eta'])
+    ydata_var=np.log10(plotdataTMP['V'])
+    if frequencies[i] == 'TN':
+        sns.kdeplot(np.log10(plotdataTMP.eta), np.log10(plotdataTMP.V), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=axScatter, alpha=1)
+
 
 x = np.log10(plotdata['eta'])
 y = np.log10(plotdata['V'])
 
-axHistx.hist(x, bins=pltvp.make_bins(x), normed=1, histtype='stepfilled', color='b')
-axHisty.hist(y, bins=pltvp.make_bins(y), normed=1, histtype='stepfilled', orientation='horizontal', color='b')
+axHistx.hist(x, bins=pltvp.make_bins(x), normed=1, histtype='stepfilled', color='k',alpha=0.2)
+axHisty.hist(y, bins=pltvp.make_bins(y), normed=1, histtype='stepfilled', orientation='horizontal', color='k', alpha=0.2)
 
-freq_labels=[f for f in frequencies]
-axScatter.legend(freq_labels,loc=4, prop=fontP)
-xmin=int(min(x)-1.1)
+xmin=-5#int(min(x)-1.1)
 xmax=int(max(x)+1.1)
-ymin=int(min(y)-1.1)
+ymin=-3#int(min(y)-1.1)
 ymax=int(max(y)+1.1)
 xvals=range(xmin,xmax)
 xtxts=[r'$10^{'+str(a)+'}$' for a in xvals]
@@ -127,7 +148,11 @@ axScatter.set_yticks(yvals)
 axScatter.set_yticklabels(ytxts, fontsize=20)
 axHistx.set_xlim( axScatter.get_xlim())
 axHisty.set_ylim( axScatter.get_ylim())
-plt.savefig(path+'LR_scatter_plots.png')
+axScatter.set_xlabel(r'$\eta_{\nu}$', fontsize=28)
+axScatter.set_ylabel(r'$V_{\nu}$', fontsize=28)
+plt.savefig(path+'LR_scatter_hist.png')
+
+plt.close()
 
 # Create the diagnostic plot
 fig = plt.figure(1,figsize=(12,12))
@@ -138,51 +163,95 @@ ax4 = fig.add_subplot(224)
 fontP = FontProperties()
 fontP.set_size('large')
 fig.subplots_adjust(hspace = .001, wspace = 0.001)
-ax1.set_ylabel(r'$\eta_\nu$', fontsize=28)
-ax3.set_ylabel(r'$V_\nu$', fontsize=28)
-ax3.set_xlabel('Max Flux (Jy)', fontsize=24)
-ax4.set_xlabel('Max Flux / Median Flux', fontsize=24)
+
 
 for i in range(len(frequencies)):
     plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
-    xdata_ax3=plotdataTMP['flux']
+    xdata_ax3=np.log10(plotdataTMP['flux'])
     xdata_ax4=plotdataTMP['fluxrat']
-    ydata_ax1=plotdataTMP['eta']
-    ydata_ax3=plotdataTMP['V']
-    ax1.scatter(xdata_ax3, ydata_ax1,color=col[i], s=10., zorder=5)
-    ax2.scatter(xdata_ax4, ydata_ax1,color=col[i], s=10., zorder=6)
-    ax3.scatter(xdata_ax3, ydata_ax3,color=col[i], s=10., zorder=7)
-    ax4.scatter(xdata_ax4, ydata_ax3,color=col[i], s=10., zorder=8)
-    ax4.legend(freq_labels, loc=4, prop=fontP)
+    ydata_ax1=np.log10(plotdataTMP['eta'])
+    ydata_ax3=np.log10(plotdataTMP['V'])
+    if frequencies[i] != 'TN':
+        ax1.scatter(xdata_ax3, ydata_ax1,color=col[i], s=20., zorder=i)
+        ax2.scatter(xdata_ax4, ydata_ax1,color=col[i], s=20., zorder=i)
+        ax3.scatter(xdata_ax3, ydata_ax3,color=col[i], s=20., zorder=i)
+        ax4.scatter(xdata_ax4, ydata_ax3,color=col[i], s=20., zorder=i)
 
-Xax3=plotdata['flux']
+
+ax4.legend(freq_labels, loc=4, prop=fontP)
+
+
+for i in range(len(frequencies)):
+    plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
+    xdata_ax3=np.log10(plotdataTMP['flux'])
+    xdata_ax4=plotdataTMP['fluxrat']
+    ydata_ax1=np.log10(plotdataTMP['eta'])
+    ydata_ax3=np.log10(plotdataTMP['V'])
+    if frequencies[i] == 'TN':
+        sns.kdeplot(np.log10(plotdataTMP.flux), np.log10(plotdataTMP.eta), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax1, alpha=1)
+        sns.kdeplot(plotdataTMP.fluxrat, np.log10(plotdataTMP.eta), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax2, alpha=1)
+        sns.kdeplot(np.log10(plotdataTMP.flux), np.log10(plotdataTMP.V), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax3, alpha=1)
+        sns.kdeplot(plotdataTMP.fluxrat, np.log10(plotdataTMP.V), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax4, alpha=1)
+
+
+Xax3=np.log10(plotdata['flux'])
 Xax4=plotdata['fluxrat']
-Yax1=plotdata['eta']
-Yax3=plotdata['V']
-ax1.set_yscale('log')
-ax1.set_xscale('log')
-ax2.set_yscale('log')
-ax3.set_yscale('log')
-ax3.set_xscale('log')
-ax4.set_yscale('log')
-xmin_ax3=10.**(int(np.log10(min(Xax3))-1.1))
-xmax_ax3=10.**(int(np.log10(max(Xax3))+1.2))
-xmin_ax4=0.8
-xmax_ax4=int(max(xdata_ax4)+0.5)
-ymin_ax1=10.**(int(np.log10(min(Yax1))-1.1))
-ymax_ax1=10.**(int(np.log10(max(Yax1))+1.2))
-ymin_ax3=10.**(int(np.log10(min(Yax3))-1.1))
-ymax_ax3=10.**(int(np.log10(max(Yax3))+1.2))
+Yax1=np.log10(plotdata['eta'])
+Yax3=np.log10(plotdata['V'])
+
+xmin_ax3=int(min(Xax3)-1.1)
+xmax_ax3=int(max(Xax3)+1.1)
+xmin_ax4=0.9
+xmax_ax4=int(max(xdata_ax4))+1.5
+ymin_ax1=-5#int(min(Yax1)-1.1)
+ymax_ax1=int(max(Yax1)+1.1)
+ymin_ax3=-3#int(min(Yax3)-1.1)
+ymax_ax3=int(max(Yax3)+1.1)
+
+xvals_ax3=range(xmin_ax3,xmax_ax3)
+xtxts_ax3=[r'$10^{'+str(a)+'}$' for a in xvals_ax3]
+yvals_ax1=range(ymin_ax1,ymax_ax1)
+ytxts_ax1=[r'$10^{'+str(a)+'}$' for a in yvals_ax1]
+yvals_ax3=range(ymin_ax3,ymax_ax3)
+ytxts_ax3=[r'$10^{'+str(a)+'}$' for a in yvals_ax3]
+
 ax1.set_ylim(ymin_ax1,ymax_ax1)
 ax3.set_ylim(ymin_ax3,ymax_ax3)
 ax3.set_xlim(xmin_ax3,xmax_ax3)
 ax4.set_xlim(xmin_ax4,xmax_ax4)
+
+
+ax3.set_xticks(xvals_ax3)
+ax3.set_xticklabels(xtxts_ax3, fontsize=12)
+ax1.set_yticks(yvals_ax1)
+ax2.set_yticks(yvals_ax1)
+ax1.set_yticklabels(ytxts_ax1, fontsize=12)
+ax3.set_yticks(yvals_ax3)
+ax4.set_yticks(yvals_ax3)
+ax3.set_yticklabels(ytxts_ax3, fontsize=12)
+
 ax1.set_xlim( ax3.get_xlim() )
 ax4.set_ylim( ax3.get_ylim() )
 ax2.set_xlim( ax4.get_xlim() )
 ax2.set_ylim( ax1.get_ylim() )
+
 ax1.xaxis.set_major_formatter(nullfmt)
 ax4.yaxis.set_major_formatter(nullfmt)
 ax2.xaxis.set_major_formatter(nullfmt)
 ax2.yaxis.set_major_formatter(nullfmt)
+
+ax1.set_ylabel(r'$\eta_\nu$', fontsize=28)
+ax2.set_ylabel('')
+ax3.set_ylabel(r'$V_\nu$', fontsize=28)
+ax3.set_xlabel('Max Flux (Jy)', fontsize=24)
+ax4.set_xlabel('Max Flux / Median Flux', fontsize=24)
+ax4.set_ylabel('')
 plt.savefig(path+'LR_diagnostic_plots.png')

@@ -64,6 +64,8 @@ plt.hist(x['minRmsSigma'], bins=bins, histtype='stepfilled', color='b')
 plt.hist(x2['minRmsSigma'], bins=bins, histtype='step', linewidth=2, color='r')
 plt.xlim(0.1,1e4)
 plt.xlabel(r'Expected detection significance of source ($\sigma$)', fontsize=24)
+plt.ylabel(r'Count', fontsize=24)
+
 plt.axvline(x=detection_threshold, linestyle='--', linewidth=2, color='k')
 plt.savefig(path+'lowRMS_sigma_histogram.png')
 
@@ -76,12 +78,14 @@ plt.hist(x['maxRmsSigma'], bins=bins, histtype='stepfilled', color='b')
 plt.hist(x2['maxRmsSigma'], bins=bins, histtype='step', linewidth=2, color='r')
 plt.xlim(0,1e4)
 plt.xlabel(r'Expected detection significance of source ($\sigma$)', fontsize=24)
+plt.ylabel(r'Count', fontsize=24)
+
 plt.axvline(x=detection_threshold, linestyle='--', linewidth=2, color='k')
 plt.savefig(path+'highRMS_sigma_histogram.png')
 
 # Find the best margins to maximise detection and reliability
-best_data=all_data[['minRmsSigma','variable']].as_matrix()
-worst_data=all_data[['maxRmsSigma','variable']].as_matrix()
+best_data=all_data2[['minRmsSigma','variable']].as_matrix()
+worst_data=all_data2[['maxRmsSigma','variable']].as_matrix()
 best_plot_data, worst_plot_data, sigBest, sigWorst = train_sigma_margin.find_sigma_margin(best_data,worst_data, detection_threshold)
 
 # Search and identify the optimal sigma margin for the best and
@@ -90,12 +94,12 @@ sigWorst, sigBest = train_sigma_margin.plot_diagnostic(best_plot_data,worst_plot
 
 # Identify the ids of interesting transient candidates assuming they're in the
 # worst part of the image
-tmpData = all_data.loc[(all_data['maxRmsSigma'] >= sigWorst+detection_threshold) & (all_data['variable']==0)]
+tmpData = all_data2.loc[(all_data2['maxRmsSigma'] >= sigWorst+detection_threshold) & (all_data2['variable']==0)]
 tmpData.to_csv(path+'candidate_transients_worst_region.csv',index=False)
 
 # Identify the ids of interesting transient candidates assuming they're in the
 # best part of the image
-tmpData = all_data.loc[(all_data['minRmsSigma'] >= sigBest+detection_threshold) & (all_data['variable']==0)]
+tmpData = all_data2.loc[(all_data2['minRmsSigma'] >= sigBest+detection_threshold) & (all_data2['variable']==0)]
 tmpData.to_csv(path+'candidate_transients_best_region.csv',index=False)
 
 # And the best thresholds are:

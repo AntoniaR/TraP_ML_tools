@@ -30,15 +30,26 @@ from tools import tools
 from plotting import plot_varib_params as pltvp
 from machine_learning import train_anomaly_detect
 from machine_learning import generic_tools
+import random
+from matplotlib.colors import LogNorm
+import seaborn as sns
 
 # The input data and thresholds
 tests = False
 plots = False
-precis_thresh = 0.99
+precis_thresh = 0.95
 recall_thresh = 0.95
 path='ml_csv_files/'
 stableData = path+'stable_sources.csv'
 simulatedData = path+'sim_*_trans_data.csv'
+
+def newCmap(colour):
+    n,r,g,b = colour
+    cdict = {'red':((0,1,1),(1,r,r)),
+            'green':((0,1,1),(1,g,g)),
+            'blue':((0,1,1),(1,b,b))}
+    cmap = LinearSegmentedColormap('custom_cmap', cdict)
+    return cmap
 
 # Load the data and give appropriate labels
 all_data = generic_tools.load_data(stableData,simulatedData)
@@ -86,12 +97,14 @@ print "Precision: "+str(precision)+", Recall: "+str(recall)
 
 # Create eta V plot showing training results
 plotdata=all_data
-frequencies=plotdata.classified.unique()
-col = pltvp.make_cmap(frequencies)
+
+frequencies=['TN','TP','FN','FP']
+col=['k','b','g','r']
+
 
 nullfmt   = NullFormatter()         # no labels
 fontP = FontProperties()
-fontP.set_size('large')
+fontP.set_size('small')
 left, width = 0.1, 0.65
 bottom, height = 0.1, 0.65
 bottom_h = left_h = left+width+0.02
@@ -108,24 +121,38 @@ axHistx.xaxis.set_major_formatter(nullfmt)
 axHisty.yaxis.set_major_formatter(nullfmt)
 axHistx.axes.yaxis.set_ticklabels([])
 axHisty.axes.xaxis.set_ticklabels([])
+                    
+
 
 for i in range(len(frequencies)):
     plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
     xdata_var=np.log10(plotdataTMP['eta'])
     ydata_var=np.log10(plotdataTMP['V'])
-    axScatter.scatter(xdata_var, ydata_var,color=col[i], s=10., zorder=5)
+    if frequencies[i] != 'TN':
+        axScatter.scatter(xdata_var, ydata_var,color=col[i], s=20., zorder=5)
+freq_labels=[f for f in frequencies if f!='TN']
+axScatter.legend(freq_labels,loc=4, prop=fontP)
+
+        
+for i in range(len(frequencies)):
+    plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
+    xdata_var=np.log10(plotdataTMP['eta'])
+    ydata_var=np.log10(plotdataTMP['V'])
+    if frequencies[i] == 'TN':
+        sns.kdeplot(np.log10(plotdataTMP.eta), np.log10(plotdataTMP.V), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=axScatter, alpha=1)
+
 
 x = np.log10(plotdata['eta'])
 y = np.log10(plotdata['V'])
 
-axHistx.hist(x, bins=pltvp.make_bins(x), normed=1, histtype='stepfilled', color='b')
-axHisty.hist(y, bins=pltvp.make_bins(y), normed=1, histtype='stepfilled', orientation='horizontal', color='b')
+axHistx.hist(x, bins=pltvp.make_bins(x), normed=1, histtype='stepfilled', color='k',alpha=0.2)
+axHisty.hist(y, bins=pltvp.make_bins(y), normed=1, histtype='stepfilled', orientation='horizontal', color='k', alpha=0.2)
 
-freq_labels=[f for f in frequencies]
-axScatter.legend(freq_labels,loc=4, prop=fontP)
-xmin=int(min(x)-1.1)
+xmin=-5#int(min(x)-1.1)
 xmax=int(max(x)+1.1)
-ymin=int(min(y)-1.1)
+ymin=-3#int(min(y)-1.1)
 ymax=int(max(y)+1.1)
 xvals=range(xmin,xmax)
 xtxts=[r'$10^{'+str(a)+'}$' for a in xvals]
@@ -147,10 +174,14 @@ if sigcutx != 0 or sigcuty != 0:
     axScatter.axvline(x=sigcutx, linewidth=2, color='k', linestyle='--')
 
 range_x,fitx = pltvp.gaussian_fit(x,paramx)
-axHistx.plot(range_x,fitx, 'k:', linewidth=2)
+axHistx.plot(range_x,fitx, 'k:', linewidth=6)
 range_y,fity = pltvp.gaussian_fit(y,paramy)
-axHisty.plot(fity,range_y, 'k:', linewidth=2)
-plt.savefig(path+'AD_scatter_plots.png')
+axHisty.plot(fity,range_y, 'k:', linewidth=6)
+axScatter.set_xlabel(r'$\eta_{\nu}$', fontsize=28)
+axScatter.set_ylabel(r'$V_{\nu}$', fontsize=28)
+plt.savefig(path+'AD_scatter_hist.png')
+
+plt.close()
 
 # Create the diagnostic plot
 fig = plt.figure(1,figsize=(12,12))
@@ -159,60 +190,106 @@ ax2 = fig.add_subplot(222)
 ax3 = fig.add_subplot(223)
 ax4 = fig.add_subplot(224)
 fontP = FontProperties()
-fontP.set_size('large')
+fontP.set_size('small')
 fig.subplots_adjust(hspace = .001, wspace = 0.001)
-ax1.set_ylabel(r'$\eta_\nu$', fontsize=28)
-ax3.set_ylabel(r'$V_\nu$', fontsize=28)
-ax3.set_xlabel('Max Flux (Jy)', fontsize=24)
-ax4.set_xlabel('Max Flux / Median Flux', fontsize=24)
+
 
 for i in range(len(frequencies)):
     plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
-    xdata_ax3=plotdataTMP['flux']
+    xdata_ax3=np.log10(plotdataTMP['flux'])
     xdata_ax4=plotdataTMP['fluxrat']
-    ydata_ax1=plotdataTMP['eta']
-    ydata_ax3=plotdataTMP['V']
-    ax1.scatter(xdata_ax3, ydata_ax1,color=col[i], s=10., zorder=5)
-    ax2.scatter(xdata_ax4, ydata_ax1,color=col[i], s=10., zorder=6)
-    ax3.scatter(xdata_ax3, ydata_ax3,color=col[i], s=10., zorder=7)
-    ax4.scatter(xdata_ax4, ydata_ax3,color=col[i], s=10., zorder=8)
-    ax4.legend(freq_labels, loc=4, prop=fontP)
+    ydata_ax1=np.log10(plotdataTMP['eta'])
+    ydata_ax3=np.log10(plotdataTMP['V'])
+    if frequencies[i] != 'TN':
+        ax1.scatter(xdata_ax3, ydata_ax1,color=col[i], s=20., zorder=i)
+        ax2.scatter(xdata_ax4, ydata_ax1,color=col[i], s=20., zorder=i)
+        ax3.scatter(xdata_ax3, ydata_ax3,color=col[i], s=20., zorder=i)
+        ax4.scatter(xdata_ax4, ydata_ax3,color=col[i], s=20., zorder=i)
 
-Xax3=plotdata['flux']
+
+ax4.legend(freq_labels, loc=4, prop=fontP)
+
+
+for i in range(len(frequencies)):
+    plotdataTMP=plotdata.loc[(plotdata['classified']==frequencies[i])]
+    xdata_ax3=np.log10(plotdataTMP['flux'])
+    xdata_ax4=plotdataTMP['fluxrat']
+    ydata_ax1=np.log10(plotdataTMP['eta'])
+    ydata_ax3=np.log10(plotdataTMP['V'])
+    if frequencies[i] == 'TN':
+        sns.kdeplot(np.log10(plotdataTMP.flux), np.log10(plotdataTMP.eta), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax1, alpha=1)
+        sns.kdeplot(plotdataTMP.fluxrat, np.log10(plotdataTMP.eta), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax2, alpha=1)
+        sns.kdeplot(np.log10(plotdataTMP.flux), np.log10(plotdataTMP.V), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax3, alpha=1)
+        sns.kdeplot(plotdataTMP.fluxrat, np.log10(plotdataTMP.V), 
+                    n_levels=1000, zorder=i, shade_lowest=False, shade=True, 
+                    color='k', ax=ax4, alpha=1)
+
+
+Xax3=np.log10(plotdata['flux'])
 Xax4=plotdata['fluxrat']
-Yax1=plotdata['eta']
-Yax3=plotdata['V']
+Yax1=np.log10(plotdata['eta'])
+Yax3=np.log10(plotdata['V'])
     
 if sigcutx != 0 or sigcuty != 0:
-    ax1.axhline(y=10.**sigcutx, linewidth=2, color='k', linestyle='--')
-    ax2.axhline(y=10.**sigcutx, linewidth=2, color='k', linestyle='--')
-    ax3.axhline(y=10.**sigcuty, linewidth=2, color='k', linestyle='--')
-    ax4.axhline(y=10.**sigcuty, linewidth=2, color='k', linestyle='--')
+    ax1.axhline(y=sigcutx, linewidth=2, color='k', linestyle='--')
+    ax2.axhline(y=sigcutx, linewidth=2, color='k', linestyle='--')
+    ax3.axhline(y=sigcuty, linewidth=2, color='k', linestyle='--')
+    ax4.axhline(y=sigcuty, linewidth=2, color='k', linestyle='--')
 
-ax1.set_yscale('log')
-ax1.set_xscale('log')
-ax2.set_yscale('log')
-ax3.set_yscale('log')
-ax3.set_xscale('log')
-ax4.set_yscale('log')
-xmin_ax3=10.**(int(np.log10(min(Xax3))-1.1))
-xmax_ax3=10.**(int(np.log10(max(Xax3))+1.2))
-xmin_ax4=0.8
-xmax_ax4=int(max(xdata_ax4)+0.5)
-ymin_ax1=10.**(int(np.log10(min(Yax1))-1.1))
-ymax_ax1=10.**(int(np.log10(max(Yax1))+1.2))
-ymin_ax3=10.**(int(np.log10(min(Yax3))-1.1))
-ymax_ax3=10.**(int(np.log10(max(Yax3))+1.2))
+xmin_ax3=int(min(Xax3)-1.1)
+xmax_ax3=int(max(Xax3)+1.1)
+xmin_ax4=0.9
+xmax_ax4=int(max(xdata_ax4))+1.5
+ymin_ax1=-5#int(min(Yax1)-1.1)
+ymax_ax1=int(max(Yax1)+1.1)
+ymin_ax3=-3#int(min(Yax3)-1.1)
+ymax_ax3=int(max(Yax3)+1.1)
+
+xvals_ax3=range(xmin_ax3,xmax_ax3)
+xtxts_ax3=[r'$10^{'+str(a)+'}$' for a in xvals_ax3]
+yvals_ax1=range(ymin_ax1,ymax_ax1)
+ytxts_ax1=[r'$10^{'+str(a)+'}$' for a in yvals_ax1]
+yvals_ax3=range(ymin_ax3,ymax_ax3)
+ytxts_ax3=[r'$10^{'+str(a)+'}$' for a in yvals_ax3]
+
 ax1.set_ylim(ymin_ax1,ymax_ax1)
 ax3.set_ylim(ymin_ax3,ymax_ax3)
 ax3.set_xlim(xmin_ax3,xmax_ax3)
 ax4.set_xlim(xmin_ax4,xmax_ax4)
+
+
+ax3.set_xticks(xvals_ax3)
+ax3.set_xticklabels(xtxts_ax3, fontsize=12)
+ax1.set_yticks(yvals_ax1)
+ax2.set_yticks(yvals_ax1)
+ax1.set_yticklabels(ytxts_ax1, fontsize=12)
+ax3.set_yticks(yvals_ax3)
+ax4.set_yticks(yvals_ax3)
+ax3.set_yticklabels(ytxts_ax3, fontsize=12)
+
 ax1.set_xlim( ax3.get_xlim() )
 ax4.set_ylim( ax3.get_ylim() )
 ax2.set_xlim( ax4.get_xlim() )
 ax2.set_ylim( ax1.get_ylim() )
+
 ax1.xaxis.set_major_formatter(nullfmt)
 ax4.yaxis.set_major_formatter(nullfmt)
 ax2.xaxis.set_major_formatter(nullfmt)
 ax2.yaxis.set_major_formatter(nullfmt)
+
+ax1.set_ylabel(r'$\eta_\nu$', fontsize=28)
+ax2.set_ylabel('')
+ax3.set_ylabel(r'$V_\nu$', fontsize=28)
+ax3.set_xlabel('Max Flux (Jy)', fontsize=24)
+ax4.set_xlabel('Max Flux / Median Flux', fontsize=24)
+ax4.set_ylabel('')
+
+
+
 plt.savefig(path+'AD_diagnostic_plots.png')

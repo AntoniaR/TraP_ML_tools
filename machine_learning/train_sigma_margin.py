@@ -78,7 +78,7 @@ def plot_diagnostic(best_data,worst_data, path):
     # plot a diagnostic plot illustrating the precision, recall and F-score as a function of increasing sigma margin
     # identify the sigma margin which optimises the precision and recall
     
-    plt.figure(figsize=(12,12))
+    plt.figure(figsize=(8,8))
     plt.plot([a[0] for a in worst_data],[a[1] for a in worst_data], 'r-', linewidth=5.0)
     plt.plot([a[0] for a in worst_data],[a[2] for a in worst_data], 'b-', linewidth=5.0)
     plt.plot([a[0] for a in worst_data],[a[3] for a in worst_data], 'k-', linewidth=5.0)
@@ -90,10 +90,13 @@ def plot_diagnostic(best_data,worst_data, path):
     sigWorst=[a for a in worst_data if a[3]==worst_maxF][0]
     sigBest=[a for a in best_data if a[3]==best_maxF][0]
     plt.xlabel(r'$\sigma$ margin')
+    plt.ylabel(r'%')
+
     plt.xscale('log')
     print 'Best sigma parameters:'
     print 'Worst RMS = '+str(sigWorst[0])+' Precision = '+str(sigWorst[1])+' Recall = '+str(sigWorst[2])
     print 'Best RMS = '+str(sigBest[0])+' Precision = '+str(sigBest[1])+' Recall = '+str(sigBest[2])
+    plt.tight_layout()
     plt.savefig(path+'sigma_margin_diagnostic.png')
     plt.close()
     return sigWorst[0], sigBest[0]
