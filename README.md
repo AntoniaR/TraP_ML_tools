@@ -1,7 +1,7 @@
 # TraP_ML_tools
 Python tools and scripts to reproduce results in Rowlinson et al. (in prep)
 
-This repository contains all the scripts required to reproduce the analysis in Rowlinson et al. (in prep). Many of the machine learning tools are not TraP specific, but the examples utilise the TraP databases.
+This repository contains all the scripts required to reproduce the analysis in [Rowlinson et al. (2019)](https://ui.adsabs.harvard.edu/abs/2019A%26C....27..111R/abstract). Many of the machine learning tools are not TraP specific, but the examples utilise the TraP databases.
 
 Acknowledgements
 ----------------
