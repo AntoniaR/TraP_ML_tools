@@ -35,6 +35,9 @@ Contents
 The tools required to access the TraP databases, you will need a dblogin.py from the examples folder and to fill in the appropriate fields for your database.
 
 #### examples
+[format4ML.py](https://github.com/AntoniaR/TraP_ML_tools/tree/master/examples/format4ML.py)
+Script to output the data from the TraP database in the format required for the machine learning scripts.
+
 [FilterVariables.py](https://github.com/AntoniaR/TraP_ML_tools/tree/master/examples/FilterVariables.py)  & [FilterVariables.ipynb](https://github.com/AntoniaR/TraP_ML_tools/tree/master/examples/FilterVariables.ipynb)
 Scripts to produce figures 3 and 4 in Rowlinson et al. (in prep) and can conduct a simple sigma threshold. Requires data processed by the TraP database. Available as both a python script and a Jupyter Notebook.
 
